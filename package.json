@@ -1,0 +1,26 @@
+{
+  "name": "timesheet",
+  "version": "1.0.0",
+  "description": "Timesheet",
+  "main": "index.js",
+  "dependencies": {
+    "cors": "latest",
+    "express": "latest",
+    "bcrypt": "latest",
+    "body-parser": "latest",
+    "jsonwebtoken": "latest",
+    "moment": "latest",
+    "mysql": "latest",
+    "async": "latest"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "keywords": [
+    "timesheet",
+    "time"
+  ],
+  "author": "ben",
+  "license": "ISC"
+}
