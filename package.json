@@ -8,7 +8,7 @@
     "bcrypt": "*",
     "body-parser": "*",
     "cors": "*",
-    "express": "*",
+    "express": "^4.13.3",
     "jsonwebtoken": "*",
     "moment": "*",
     "mysql": "*",
