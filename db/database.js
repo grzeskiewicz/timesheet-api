@@ -2,11 +2,20 @@ const mysql = require('mysql')
 const date = require('../date');
 const nodemailer = require('nodemailer');
 
+/*
 const connection = mysql.createConnection({
     host: 'localhost',
     user: 'benake',
     password: 'Palkast123!',
     database: 'timesheet',
+    port: 3306
+}); */
+
+const connection = mysql.createConnection({
+    host: 'eu-cdbr-west-03.cleardb.net',
+    user: 'ba79b279a6d840',
+    password: 'a6c1b348',
+    database: 'heroku_6077f9353d7377d',
     port: 3306
 });
 
@@ -168,12 +177,13 @@ const sendEmails = function (req, res) {
             from: 'timesheet.klaster@gmail.com',
             to: emails,
             subject: '[Lista obecności] Przypomnienie',
-            text: `
-            Witam, 
-            przypominam o wypełnieniu listy obecności za obecny miesiąc!
+            text:
+                `
+        Witam, 
+        przypominam o wypełnieniu listy obecności za obecny miesiąc!
             
-            Pozdrawiam,
-            Administrator.
+        Pozdrawiam,
+        Administrator.
             `
         };
 
