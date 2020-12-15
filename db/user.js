@@ -54,7 +54,7 @@ const getRoles = (req, res) => {
     });
 }
 
-const createUser = function (req, res,next) {
+const createUser = function (req, res, next) {
     const vals = Object.keys(req.body).map((key) => req.body[key]);
     vals.push(String(date.datetimeNow()));
     connection.query("select 1 from users where email='" + req.body.email + "'", function (err, rows) {
@@ -65,9 +65,8 @@ const createUser = function (req, res,next) {
             vals[3] = bcrypt.hashSync(req.body.password, 10);
             connection.query("INSERT INTO users(name,surname,email,password,deal,role,creation_date) VALUES(?,?,?,?,?,?,?)", vals, function (err, result) {
                 if (err) res.json({ success: false, msg: "USER INSERT ERROR" });
-                //res.end();
                 res.json({ success: true, msg: "USER CREATED" });
-                 next();
+                next();
             });
         }
 

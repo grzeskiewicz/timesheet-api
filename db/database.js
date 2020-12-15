@@ -65,7 +65,10 @@ const createEmptyTimesheets = function (req, res, next) {
         });
 
         connection.query("INSERT IGNORE INTO dayrecords (user,month,day,ispublicholiday) VALUES" + mapka, function (err, rows) {
-            if (err) res.json(err);
+            if (err) {
+                console.log(err);
+                res.json(err);}
+
             if (typeof req.body !== "undefined") res.json({ success: true, msg: "SHEETS CREATED" });
             console.log("createsheeets 3 insert");
             if (typeof req.body !== "undefined") next();
@@ -191,7 +194,7 @@ const sendEmails = function (req, res) {
             if (error) {
                 console.log(error);
             } else {
-                res.json({ success: true, msg: 'Email sent' });
+                res.json({ success: true, msg: 'EMAILS SENT' });
                 console.log('Email sent: ' + info.response);
             }
         });
