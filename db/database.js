@@ -65,6 +65,7 @@ const createEmptyTimesheets = function (req, res, next) {
         });
 
         connection.query("INSERT IGNORE INTO dayrecords (user,month,day,ispublicholiday) VALUES" + mapka, function (err, rows) {
+            console.log(mapka);
             if (err) {
                 console.log(err);
                 res.json(err);}
