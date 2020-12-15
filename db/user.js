@@ -43,7 +43,7 @@ const getRoles = (req, res) => {
     });
 }
 
-const createUser = function (req, res) {
+const createUser = function (req, res,next) {
     const vals = Object.keys(req.body).map((key) => req.body[key]);
     vals.push(String(date.datetimeNow()));
     connection.query("select 1 from users where email='" + req.body.email + "'", function (err, rows) {
@@ -54,7 +54,9 @@ const createUser = function (req, res) {
             vals[3] = bcrypt.hashSync(req.body.password, 10);
             connection.query("INSERT INTO users(name,surname,email,password,deal,role,creation_date) VALUES(?,?,?,?,?,?,?)", vals, function (err, result) {
                 if (err) res.json({ success: false, msg: "USER INSERT ERROR" });
+                //res.end();
                 res.json({ success: true, msg: "USER CREATED" });
+                 next();
             });
         }
 
@@ -63,16 +65,20 @@ const createUser = function (req, res) {
 }
 
 const editUser = function (req, res) {
-    console.log(req.body);
     const name = req.body.name;
     const surname = req.body.surname;
-    const password = req.body.password;
     const email = req.body.email;
     const deal = req.body.deal;
     const role = req.body.role;
-    connection.query(`UPDATE users SET name='${name}', surname='${surname}', email ='${email}', deal='${deal}', role='${role}' WHERE email='${email}'`, function (err, rows) {
+    const password = (req.body.password === '' || req.body.password === null || req.body.password === undefined) ? null : bcrypt.hashSync(req.body.password, 10);
+
+    connection.query(`UPDATE users SET name='${name}', 
+    surname='${surname}', 
+    email ='${email}', deal='${deal}', 
+    role='${role}',
+    password= IFNULL('${password}',password)
+    WHERE email='${email}'`, function (err, rows) {
         if (err) res.json(err);
-        console.log(rows);
         res.json({ success: true, msg: 'USER UPDATED' });
     });
 }
@@ -81,7 +87,6 @@ const deleteUser = function (req, res) {
     connection.query("delete from users where id=" + req.body.id, function (err, rows) {
         if (err) res.json(err);
         res.json(rows);
-        //   connection.end();
     });
 }
 
