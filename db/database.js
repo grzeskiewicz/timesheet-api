@@ -61,6 +61,8 @@ const createEmptyTimesheets = function (req, res, next) {
             return `(${record})`;
         });
 
+        connection.end();
+
         connection.query("INSERT IGNORE INTO dayrecords (user,month,day,ispublicholiday) VALUES" + mapka, function (err, rows) {
             if (err) {
                 // console.log(err);
@@ -99,6 +101,7 @@ const createEmptyMonthSummaries = function (req, res, next) {
             return `(${record})`;
         });
 
+        connection.end();
 
 
         connection.query("INSERT IGNORE INTO monthsummaries (user,month,year) VALUES" + mapka, function (err, rows) {
