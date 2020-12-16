@@ -40,7 +40,9 @@ const HOLIDAYS = [
 
 const createEmptyTimesheets = function (req, res, next) {
     console.log(typeof req.body === "undefined");
-    const month = typeof req.body !== "undefined" ? req.body.month : new Date().getMonth() + 1;
+    console.log(req.body);
+    const month = typeof req.body !== "undefined" ? (typeof req.body.month !== "undefined" ? req.body.month : new Date().getMonth() + 1) : new Date().getMonth() + 1;
+    console.log(month);
     const days = date.daysInMonth(month, 2020);
     const holidaysMonth = HOLIDAYS.filter(element => element.month === Number(month));
 
@@ -65,14 +67,17 @@ const createEmptyTimesheets = function (req, res, next) {
         });
 
         connection.query("INSERT IGNORE INTO dayrecords (user,month,day,ispublicholiday) VALUES" + mapka, function (err, rows) {
-            console.log(mapka);
             if (err) {
-                console.log(err);
-                res.json(err);}
+                // console.log(err);
+                res.json(err);
+            }
 
-            if (typeof req.body !== "undefined") res.json({ success: true, msg: "SHEETS CREATED" });
+            if (typeof req.body !== "undefined" && typeof req.body.month !== "undefined") res.json({ success: true, msg: "SHEETS CREATED" });
             console.log("createsheeets 3 insert");
-            if (typeof req.body !== "undefined") next();
+            if (typeof req.body !== "undefined" && typeof req.body.month === "undefined") {
+                console.log("Przekazuje dalej");
+                next();
+            }
         });
 
     });
@@ -80,12 +85,14 @@ const createEmptyTimesheets = function (req, res, next) {
 
 
 const createEmptyMonthSummaries = function (req, res, next) {
+    console.log("summaries1");
+
     const year = new Date().getFullYear();
     const month = new Date().getMonth() + 1;
-    const allUsers = (typeof req.body !== "undefined" && req.body.updateallusers) ? req.body.updateallusers : true;
+    const allUsers = (typeof req.body !== "undefined" && typeof req.body.updateallusers !== "undefined") ? req.body.updateallusers : true;
     connection.query("SELECT id FROM users", function (err, rows) { // WHERE deal=1
         if (err) res.json(err);
-        console.log("summaries");
+        console.log("summaries2");
         const ids = Object.keys(rows).map((key) => rows[key].id);
         const summaries = [];
         for (const id of ids) {
@@ -101,8 +108,13 @@ const createEmptyMonthSummaries = function (req, res, next) {
 
         connection.query("INSERT IGNORE INTO monthsummaries (user,month,year) VALUES" + mapka, function (err, rows) {
             if (err) res.json(err);
-            if (allUsers && typeof req.body !== "undefined") res.json({ success: true, msg: "SUMMARIES CREATED" });
-            if (typeof req.body !== "undefined") res.end();
+            console.log(req.body);
+
+            if (allUsers && typeof req.body !== "undefined" && typeof req.body.updateallusers !== "undefined") console.log("Tuta1") && res.json({ success: true, msg: "SUMMARIES CREATED" });
+            if (typeof req.body !== "undefined" && typeof req.body.updateallusers === "undefined") {
+                console.log("Tuta2");
+                res.end();}
+            
         });
 
     });
