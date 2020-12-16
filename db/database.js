@@ -130,7 +130,7 @@ const createEmptyMonthSummaries = function (req, res, next) {
             if (err) res.json(err);
             console.log(req.body);
 
-            if (allUsers && typeof req.body !== "undefined" && typeof req.body.updateallusers !== "undefined") console.log("Tuta1") && res.json({ success: true, msg: "SUMMARIES CREATED" });
+            if (allUsers && typeof req.body !== "undefined" && typeof req.body.updateallusers !== "undefined") res.json({ success: true, msg: "SUMMARIES CREATED" });
             if (typeof req.body !== "undefined" && typeof req.body.updateallusers === "undefined") {
                 console.log("Tuta2");
                 res.end();}
