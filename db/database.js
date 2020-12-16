@@ -1,6 +1,6 @@
 const mysql = require('mysql')
 const date = require('../date');
-const dbConfig=require('dbConfig');
+const dbConfig=require('./dbConfig');
 const nodemailer = require('nodemailer');
 
 /*

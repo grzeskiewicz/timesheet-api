@@ -5,7 +5,7 @@ const express = require('express');
 const app = express();
 const cors = require('cors');
 const date = require('../date');
-const dbConfig=require('dbConfig');
+const dbConfig=require('./dbConfig');
 
 
 const bodyParser = require('body-parser');
