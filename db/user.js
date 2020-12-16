@@ -5,7 +5,7 @@ const express = require('express');
 const app = express();
 const cors = require('cors');
 const date = require('../date');
-const dbConfig=require('./dbConfig');
+const dbConfig=require('dbConfig');
 
 
 const bodyParser = require('body-parser');
@@ -24,6 +24,7 @@ const connection = mysql.createConnection({
 }); */
 
 const connection = mysql.createConnection(dbConfig.config);
+
 
 const comparePassword = function (password, hash) {
     return bcrypt.compareSync(password, hash);
@@ -52,7 +53,6 @@ const createUser = function (req, res, next) {
         const userExists = rows[0];
         if (userExists) res.json({ success: false, msg: "USER EXISTS" });
         else {
-            connection.end();
             vals[3] = bcrypt.hashSync(req.body.password, 10);
             connection.query("INSERT INTO users(name,surname,email,password,deal,role,creation_date) VALUES(?,?,?,?,?,?,?)", vals, function (err, result) {
                 if (err) res.json({ success: false, msg: "USER INSERT ERROR" });
