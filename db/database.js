@@ -1,5 +1,6 @@
 const mysql = require('mysql')
 const date = require('../date');
+const dbConfig=require('dbConfig');
 const nodemailer = require('nodemailer');
 
 /*
@@ -11,13 +12,7 @@ const connection = mysql.createConnection({
     port: 3306
 }); */
 
-const connection = mysql.createConnection({
-    host: 'eu-cdbr-west-03.cleardb.net',
-    user: 'ba79b279a6d840',
-    password: 'a6c1b348',
-    database: 'heroku_6077f9353d7377d',
-    port: 3306
-});
+const connection = mysql.createConnection(dbConfig.config);
 
 const HOLIDAYS = [
     { day: 1, month: 1 },

@@ -5,18 +5,14 @@ const express = require('express');
 const app = express();
 const cors = require('cors');
 const date = require('../date');
+const dbConfig=require('dbConfig');
 
 
 const bodyParser = require('body-parser');
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
 app.use(bodyParser.json()); // support json encoded bodies 
-/*
-app.use(function(req, res, next) {
-        res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Headers","Content-Type");
-    next();
-});*/
+
 
 /*
 const connection = mysql.createConnection({
@@ -27,13 +23,7 @@ const connection = mysql.createConnection({
     port: 3306
 }); */
 
-const connection = mysql.createConnection({
-    host: 'eu-cdbr-west-03.cleardb.net',
-    user: 'ba79b279a6d840',
-    password: 'a6c1b348',
-    database: 'heroku_6077f9353d7377d',
-    port: 3306
-});
+const connection = mysql.createConnection(dbConfig.config);
 
 const comparePassword = function (password, hash) {
     return bcrypt.compareSync(password, hash);
