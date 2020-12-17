@@ -53,7 +53,7 @@ app.get('/sendemails', db.sendEmails);
 
 
 const port = process.env.PORT || 8080,
-    ip = process.env.IP || '0.0.0.0';
+    ip = process.env.IP || '127.0.0.1';
 
 http.listen(port, ip);
 console.log('Server running on http://%s:%s', ip, port);

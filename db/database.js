@@ -3,15 +3,6 @@ const date = require('../date');
 const dbConfig=require('./dbConfig');
 const nodemailer = require('nodemailer');
 
-/*
-const connection = mysql.createConnection({
-    host: 'localhost',
-    user: 'benake',
-    password: 'Palkast123!',
-    database: 'timesheet',
-    port: 3306
-}); */
-
 
 let connection;
 
@@ -59,10 +50,11 @@ const HOLIDAYS = [
 
 
 const createEmptyTimesheets = function (req, res, next) {
-    console.log(typeof req.body === "undefined");
-    console.log(req.body);
+
     const month = typeof req.body !== "undefined" ? (typeof req.body.month !== "undefined" ? req.body.month : new Date().getMonth() + 1) : new Date().getMonth() + 1;
-    console.log(month);
+    const year = typeof req.body !== "undefined" ? (typeof req.body.year !== "undefined" ? req.body.year : new Date().getFullYear()) : new Date().getFullYear;
+
+    console.log(year);
     const days = date.daysInMonth(month, 2020);
     const holidaysMonth = HOLIDAYS.filter(element => element.month === Number(month));
 
@@ -77,7 +69,7 @@ const createEmptyTimesheets = function (req, res, next) {
                 for (const holiday of holidaysMonth) {
                     if (holiday.day === day) isPublicHoliday = true;
                 }
-                const record = id + "," + month + "," + day + "," + isPublicHoliday;
+                const record = id + "," + year + "," + month + "," + day + "," + isPublicHoliday;
                 userday.push(record);
             }
         }
@@ -86,7 +78,7 @@ const createEmptyTimesheets = function (req, res, next) {
             return `(${record})`;
         });
 
-        connection.query("INSERT IGNORE INTO dayrecords (user,month,day,ispublicholiday) VALUES" + mapka, function (err, rows) {
+        connection.query("INSERT IGNORE INTO dayrecords (user,year,month,day,ispublicholiday) VALUES" + mapka, function (err, rows) {
             if (err) {
                 // console.log(err);
                 res.json(err);
@@ -178,7 +170,8 @@ const setSummary = function (req, res) {
 const getUserSheet = function (req, res) {
     const userid = req.body.id;
     const month = req.body.month;
-    connection.query(`SELECT dr.id,dr.user, dr.month,dr.day,dr.start,dr.finish,ds.state,dr.ispublicholiday,dr.locked FROM dayrecords dr INNER JOIN daystates ds ON dr.state=ds.id WHERE dr.user='${userid}' AND dr.month='${month}' ORDER BY dr.day`, function (err, rows) {
+    const year=req.body.year;
+    connection.query(`SELECT dr.id,dr.user, dr.month,dr.day,dr.start,dr.finish,ds.state,dr.ispublicholiday,dr.locked FROM dayrecords dr INNER JOIN daystates ds ON dr.state=ds.id WHERE dr.user='${userid}' AND dr.month='${month}' AND dr.year='${year}' ORDER BY dr.day`, function (err, rows) {
         if (err) res.json(err);
         res.json(rows);
     });

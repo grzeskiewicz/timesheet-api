@@ -1,0 +1,15 @@
+{
+  "staging": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-timesheetapi-staging-192947-authRole",
+      "UnauthRoleArn": "arn:aws:iam::415956994490:role/amplify-timesheetapi-staging-192947-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::415956994490:role/amplify-timesheetapi-staging-192947-authRole",
+      "Region": "eu-central-1",
+      "DeploymentBucketName": "amplify-timesheetapi-staging-192947-deployment",
+      "UnauthRoleName": "amplify-timesheetapi-staging-192947-unauthRole",
+      "StackName": "amplify-timesheetapi-staging-192947",
+      "StackId": "arn:aws:cloudformation:eu-central-1:415956994490:stack/amplify-timesheetapi-staging-192947/395c41d0-409e-11eb-84c9-02872f9a58dc",
+      "AmplifyAppId": "d66fgrraawp02"
+    }
+  }
+}

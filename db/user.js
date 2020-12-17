@@ -13,16 +13,6 @@ app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
 app.use(bodyParser.json()); // support json encoded bodies 
 
-
-/*
-const connection = mysql.createConnection({
-    host: 'localhost',
-    user: 'benake',
-    password: 'Palkast123!',
-    database: 'timesheet',
-    port: 3306
-}); */
-
 let connection;
 
 function handleDisconnect() {
