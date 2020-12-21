@@ -15,6 +15,7 @@ app.options('*', cors()) // include before other routes
 const scheduleMonthlySheets = schedule.scheduleJob('01 00 1 * *', db.createEmptyTimesheets); //schedule every month (00:01 every 1st day of the month)
 const scheduleMonthlySummaries = schedule.scheduleJob('01 00 1 * *', db.createEmptyMonthSummaries); //schedule every month (00:01 every 1st day of the month)
 
+app.get('/', (req, res) => res.send('Welcome!'));
 
 app.get('/users', user.users);
 app.get('/getroles', user.getRoles);
@@ -52,7 +53,7 @@ app.get('/sendemails', db.sendEmails);
 
 
 
-const port = process.env.PORT || 8080,
+const port = process.env.PORT || 3001,
     ip = process.env.IP || '127.0.0.1';
 
 http.listen(port, ip);
