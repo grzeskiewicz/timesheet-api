@@ -83,13 +83,12 @@ const editUser = function (req, res) {
     const email = req.body.email;
     const deal = req.body.deal;
     const role = req.body.role;
-    const password = (req.body.password === '' || req.body.password === null || req.body.password === undefined) ? null : bcrypt.hashSync(req.body.password, 10);
+    //const password = (req.body.password === '' || req.body.password === null || req.body.password === undefined) ? null : bcrypt.hashSync(req.body.password, 10);
 
     connection.query(`UPDATE users SET name='${name}', 
     surname='${surname}', 
     email ='${email}', deal='${deal}', 
-    role='${role}',
-    password= IFNULL('${password}',password)
+    role='${role}'
     WHERE email='${email}'`, function (err, rows) {
         if (err) res.json(err);
         res.json({ success: true, msg: 'USER UPDATED' });
