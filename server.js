@@ -33,7 +33,7 @@ app.post('/login', user.login);
 app.get('/userinfo', user.userinfo);
 
 app.post('/password-reset', user.passwordReset);
-app.post('/password-reset', user.storePassword);
+app.post('/store-password', user.storePassword);
 
 
 app.post('/createsheets', db.createEmptyTimesheets);

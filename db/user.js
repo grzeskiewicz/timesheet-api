@@ -174,12 +174,12 @@ const loginRequired = function (req, res, next) {
 
 const passwordReset = function (req, res) {
     const email = req.body.email;
-
+    console.log(email);
     connection.query("select id from users where email='" + email + "'", function (err, rows) {
         if (err) throw err
         const user = rows[0];
         if (user) {
-            connection.query("select * from authresets where user='" + user.id + "'", function (err, row) {
+            connection.query("select * from authresets where user='" + user.id + "' AND status=0", function (err, row) {
                 const authreset = row[0];
                 console.log(row);
                 if (authreset) connection.query("DELETE FROM authresets where id='" + authreset.id + "'", function (err, rowdel) { if (err) res.json({ err: err }) });
@@ -232,26 +232,26 @@ const storePassword = function (req, res) {
     const { user, token, password } = req.body;
     console.log(req.body);
 
-    /* connection.query("select * from authresets where user='" + user.id + "' AND status=0", function (err, row) {
-         if (err) res.json({ success: false, err: err });
-         const authreset = row[0];
-         if (!authreset) {
-             return throwFailed(res, 'Invalid or expired reset token.')
-         }
-         bcrypt.compare(token, authreset.token, function (errBcrypt, resBcrypt) {// the token and the hashed token in the db are verified befor updating the password
-             let expireTime = moment.utc(authreset.expire);
-             let currentTime = new Date();
-             bcrypt.hash(password, 10, function (err, hash) {
-                 if (err) res.json({ success: false, err: err });
-                 connection.query(`UPDATE users SET password='${hash}' WHERE id='${user}'`, function (err, rows) {
-                     if (err) res.json({ success: false, err: err });
-                     connection.query(`UPDATE authresets SET status=1 WHERE id='${authreset.id}'`, function (err, rows) {
-                         res.json({ success: true, msg: 'PWD UPDATED' });
-                     });
-                 });
-             });
-         });
-     }).catch(error => throwFailed(error, '')); */
+    connection.query("select * from authresets where user='" + user + "' AND status=0", function (err, row) {
+        if (err) res.json({ success: false, err: err });
+        const authreset = row[0];
+        if (!authreset) {
+            res.json({ success: false, msg: 'INVALID EXPIRED TOKEN' });
+        }
+        bcrypt.compare(token, authreset.token, function (errBcrypt, resBcrypt) {// the token and the hashed token in the db are verified befor updating the password
+            let expireTime = moment.utc(authreset.expire);
+            let currentTime = new Date();
+            bcrypt.hash(password, 10, function (err, hash) {
+                if (err) res.json({ success: false, err: err });
+                connection.query(`UPDATE users SET password='${hash}' WHERE id='${user}'`, function (err, rows) {
+                    if (err) res.json({ success: false, err: err });
+                    connection.query(`UPDATE authresets SET status=1 WHERE id='${authreset.id}'`, function (err, rows) {
+                        res.json({ success: true, msg: 'PWD UPDATED' });
+                    });
+                });
+            });
+        });
+    });
 }
 
 
