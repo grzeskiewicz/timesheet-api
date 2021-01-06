@@ -1,6 +1,7 @@
 const mysql = require('mysql')
 const date = require('../date');
 const dbConfig=require('./dbConfig');
+const mailConfig=require('../mailConfig');
 const nodemailer = require('nodemailer');
 
 
@@ -188,13 +189,7 @@ const getSummary = function (req, res) {
     });
 }
 
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: 'timesheet.klaster@gmail.com',
-        pass: 'Twojastara123'
-    }
-});
+const transporter = nodemailer.createTransport(mailConfig.config);
 
 const sendEmails = function (req, res) {
 
@@ -202,7 +197,7 @@ const sendEmails = function (req, res) {
         if (err) res.json(err);
         const emails = Object.keys(rows).map((key) => rows[key].email).join(",");
 
-        var mailOptions = {
+        const mailOptions = {
             from: 'timesheet.klaster@gmail.com',
             to: emails,
             subject: '[Lista obecności] Przypomnienie',

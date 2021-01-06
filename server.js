@@ -32,6 +32,8 @@ app.post('/edituser', user.editUser);
 app.post('/login', user.login);
 app.get('/userinfo', user.userinfo);
 
+app.post('/password-reset', user.passwordReset);
+
 
 app.post('/createsheets', db.createEmptyTimesheets);
 app.post('/createsummaries', db.createEmptyMonthSummaries);

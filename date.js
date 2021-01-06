@@ -1,5 +1,5 @@
-const formatLocalDate = function () {
-    const now = new Date(),
+const formatLocalDate = function (date) {
+    const now = date || new Date(),
         tzo = -now.getTimezoneOffset(),
         dif = tzo >= 0 ? '+' : '-',
         pad = function (num) {
@@ -18,10 +18,11 @@ const formatLocalDate = function () {
 
 
 const datetimeNow = () => formatLocalDate().slice(0, 19).replace('T', ' ');
+const datetimeParam = (date) => formatLocalDate(date).slice(0, 19).replace('T', ' ');
 
 
-function daysInMonth (month, year) { // Use 1 for January, 2 for February, etc.
+function daysInMonth(month, year) { // Use 1 for January, 2 for February, etc.
     return new Date(year, month, 0).getDate();
-  }
+}
 
-module.exports = { formatLocalDate, datetimeNow, daysInMonth}
+module.exports = { formatLocalDate, datetimeNow, daysInMonth,datetimeParam }
