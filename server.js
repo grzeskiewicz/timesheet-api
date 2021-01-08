@@ -26,7 +26,7 @@ app.post('/createuser', db.createEmptyTimesheets);
 app.post('/createuser', db.createEmptyMonthSummaries);
 
 
-app.post('/deleteuser', user.deleteUser);
+app.post('/delete-user', user.deleteUser);
 app.post('/edituser', user.editUser);
 
 app.post('/login', user.login);

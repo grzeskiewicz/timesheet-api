@@ -64,15 +64,15 @@ const getRoles = (req, res) => {
 }
 
 const createUser = function (req, res, next) {
-    const vals = Object.keys(req.body).map((key) => req.body[key]);
-    vals.push(String(date.datetimeNow()));
-    connection.query("select 1 from users where email='" + req.body.email + "'", function (err, rows) {
+    const creationDate = String(date.datetimeNow());
+    let { id, name, surname, email, password, deal, role } = req.body;
+    connection.query("select 1 from users where email='" + email + "'", function (err, rows) {
         if (err) res.json(err);
         const userExists = rows[0];
         if (userExists) res.json({ success: false, msg: "USER EXISTS" });
         else {
-            vals[3] = bcrypt.hashSync(req.body.password, 10);
-            connection.query("INSERT INTO users(name,surname,email,password,deal,role,creation_date) VALUES(?,?,?,?,?,?,?)", vals, function (err, result) {
+            password = bcrypt.hashSync(req.body.password, 10);
+            connection.query(`INSERT INTO users(name,surname,email,password,deal,role,creation_date) VALUES("${name}","${surname}","${email}","${password}",${deal},${role},'${creationDate}')`, function (err, result) {
                 if (err) res.json({ success: false, msg: "USER INSERT ERROR" });
                 res.json({ success: true, msg: "USER CREATED" });
                 next();
@@ -89,22 +89,25 @@ const editUser = function (req, res) {
     const email = req.body.email;
     const deal = req.body.deal;
     const role = req.body.role;
-    //const password = (req.body.password === '' || req.body.password === null || req.body.password === undefined) ? null : bcrypt.hashSync(req.body.password, 10);
-
-    connection.query(`UPDATE users SET name='${name}', 
+    const userID = req.body.id;
+    connection.query(`UPDATE IGNORE users SET name='${name}', 
     surname='${surname}', 
     email ='${email}', deal='${deal}', 
     role='${role}'
-    WHERE email='${email}'`, function (err, rows) {
+    WHERE id='${userID}'`, function (err, rows) {
         if (err) res.json(err);
-        res.json({ success: true, msg: 'USER UPDATED' });
+        if (rows.changedRows === 0) {
+            res.json({ success: false, msg: 'NO CHANGES' });
+        } else {
+            res.json({ success: true, msg: 'USER UPDATED' });
+        }
     });
 }
 
 const deleteUser = function (req, res) {
-    connection.query("delete from users where id=" + req.body.id, function (err, rows) {
-        if (err) res.json(err);
-        res.json(rows);
+    connection.query("delete from users where id=" + req.body.user, function (err, rows) {
+        if (err) res.json({ err: err });
+        res.json({ success: true, msg: "USER DELETED" });
     });
 }
 
@@ -121,7 +124,7 @@ const users = function (req, res) {
 
 const login = function (req, res) {
     connection.query("select * from users where email='" + req.body.email + "'", function (err, rows) {
-        if (err) throw err
+        if (err) res.json({err:err});
         user = rows[0];
         if (user) {
             if (!comparePassword(req.body.password, user.password)) {
@@ -231,12 +234,17 @@ const passwordReset = function (req, res) {
 const storePassword = function (req, res) {
     const { user, token, password } = req.body;
     console.log(req.body);
-
+    if (token === undefined) res.json({ success: false, msg: "NO TOKEN" });
     connection.query("select * from authresets where user='" + user + "' AND status=0", function (err, row) {
         if (err) res.json({ success: false, err: err });
         const authreset = row[0];
-        if (!authreset) {
+        if (!authreset || authreset === undefined) {
             res.json({ success: false, msg: 'INVALID EXPIRED TOKEN' });
+            return;
+        }
+        if (authreset === undefined) {
+            res.json({ success: false, msg: "NO TOKEN" });
+            return;
         }
         bcrypt.compare(token, authreset.token, function (errBcrypt, resBcrypt) {// the token and the hashed token in the db are verified befor updating the password
             let expireTime = moment.utc(authreset.expire);
