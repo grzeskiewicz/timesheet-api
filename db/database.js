@@ -1,31 +1,31 @@
 const mysql = require('mysql')
 const date = require('../date');
-const dbConfig=require('./dbConfig');
-const mailConfig=require('../mailConfig');
+const dbConfig = require('./dbConfig');
+const mailConfig = require('../mailConfig');
 const nodemailer = require('nodemailer');
 
 
 let connection;
 
 function handleDisconnect() {
-  connection = mysql.createConnection(dbConfig.config); // Recreate the connection, since
-                                                  // the old one cannot be reused.
+    connection = mysql.createConnection(dbConfig.config); // Recreate the connection, since
+    // the old one cannot be reused.
 
-  connection.connect(function(err) {              // The server is either down
-    if(err) {                                     // or restarting (takes a while sometimes).
-      console.log('error when connecting to db:', err);
-      setTimeout(handleDisconnect, 2000); // We introduce a delay before attempting to reconnect,
-    }                                     // to avoid a hot loop, and to allow our node script to
-  });                                     // process asynchronous requests in the meantime.
-                                          // If you're also serving http, display a 503 error.
-  connection.on('error', function(err) {
-    console.log('db error', err);
-    if(err.code === 'PROTOCOL_CONNECTION_LOST') { // Connection to the MySQL server is usually
-      handleDisconnect();                         // lost due to either server restart, or a
-    } else {                                      // connnection idle timeout (the wait_timeout
-      throw err;                                  // server variable configures this)
-    }
-  });
+    connection.connect(function (err) {              // The server is either down
+        if (err) {                                     // or restarting (takes a while sometimes).
+            console.log('error when connecting to db:', err);
+            setTimeout(handleDisconnect, 2000); // We introduce a delay before attempting to reconnect,
+        }                                     // to avoid a hot loop, and to allow our node script to
+    });                                     // process asynchronous requests in the meantime.
+    // If you're also serving http, display a 503 error.
+    connection.on('error', function (err) {
+        console.log('db error', err);
+        if (err.code === 'PROTOCOL_CONNECTION_LOST') { // Connection to the MySQL server is usually
+            handleDisconnect();                         // lost due to either server restart, or a
+        } else {                                      // connnection idle timeout (the wait_timeout
+            throw err;                                  // server variable configures this)
+        }
+    });
 }
 
 handleDisconnect();
@@ -42,6 +42,88 @@ const HOLIDAYS = [
     { day: 25, month: 12 },
     { day: 26, month: 12 }
 ]
+
+const CHANGING_HOLIDAYS = {
+    [2021]: [
+        { day: 4, month: 4 },
+        { day: 4, month: 4 },
+        { day: 23, month: 5 },
+        { day: 3, month: 6 }
+    ]
+    ,
+    [2022]: [
+        { day: 17, month: 4 },
+        { day: 18, month: 4 },
+        { day: 5, month: 6 },
+        { day: 16, month: 6 }
+    ],
+    [2023]: [
+        { day: 9, month: 4 },
+        { day: 10, month: 4 },
+        { day: 28, month: 5 },
+        { day: 8, month: 6 }
+    ],
+    [2024]: [
+        { day: 31, month: 3 },
+        { day: 1, month: 4 },
+        { day: 19, month: 5 },
+        { day: 30, month: 5 }
+    ],
+    [2025]: [
+        { day: 20, month: 4 },
+        { day: 21, month: 4 },
+        { day: 8, month: 6 },
+        { day: 19, month: 6 }
+    ],
+    [2026]: [
+        { day: 5, month: 4 },
+        { day: 6, month: 4 },
+        { day: 24, month: 5 },
+        { day: 4, month: 6 }
+    ],
+    [2027]: [
+        { day: 28, month: 3 },
+        { day: 29, month: 3 },
+        { day: 16, month: 5 },
+        { day: 27, month: 5 }
+    ],
+    [2028]: [
+        { day: 16, month: 4 },
+        { day: 17, month: 4 },
+        { day: 4, month: 6 },
+        { day: 15, month: 6 }
+    ],
+    [2029]: [
+        { day: 1, month: 4 },
+        { day: 2, month: 4 },
+        { day: 20, month: 5 },
+        { day: 31, month: 5 }
+    ],
+    [2030]: [
+        { day: 21, month: 4 },
+        { day: 22, month: 4 },
+        { day: 9, month: 6 },
+        { day: 20, month: 6 }
+    ],
+    [2031]: [
+        { day: 1, month: 4 },
+        { day: 2, month: 4 },
+        { day: 1, month: 6 },
+        { day: 12, month: 6 }
+    ],
+    [2032]: [
+        { day: 28, month: 3 },
+        { day: 29, month: 3 },
+        { day: 16, month: 5 },
+        { day: 27, month: 5 }
+    ],
+    [2033]: [
+        { day: 17, month: 4 },
+        { day: 18, month: 4 },
+        { day: 5, month: 6 },
+        { day: 16, month: 6 }
+    ]
+}
 //ruchome: wielkanoc I, wielkanoc II, zielony świątek, boże ciało
 
 
@@ -55,10 +137,10 @@ const createEmptyTimesheets = function (req, res, next) {
     const month = typeof req.body !== "undefined" ? (typeof req.body.month !== "undefined" ? req.body.month : new Date().getMonth() + 1) : new Date().getMonth() + 1;
     const year = typeof req.body !== "undefined" ? (typeof req.body.year !== "undefined" ? req.body.year : new Date().getFullYear()) : new Date().getFullYear;
 
-    console.log(year);
+
     const days = date.daysInMonth(month, 2020);
     const holidaysMonth = HOLIDAYS.filter(element => element.month === Number(month));
-
+    const changingHolidaysMonth = CHANGING_HOLIDAYS[year].filter(element => element.month === Number(month));
     connection.query("SELECT id FROM users", function (err, rows) { // WHERE deal=1
         if (err) res.json(err);
 
@@ -70,6 +152,10 @@ const createEmptyTimesheets = function (req, res, next) {
                 for (const holiday of holidaysMonth) {
                     if (holiday.day === day) isPublicHoliday = true;
                 }
+                for (const holiday of changingHolidaysMonth) {
+                    if (holiday.day === day) isPublicHoliday = true;
+                }
+
                 const record = id + "," + year + "," + month + "," + day + "," + isPublicHoliday;
                 userday.push(record);
             }
@@ -99,7 +185,6 @@ const createEmptyTimesheets = function (req, res, next) {
 
 const createEmptyMonthSummaries = function (req, res, next) {
     console.log("summaries1");
-
     const year = new Date().getFullYear();
     const month = new Date().getMonth() + 1;
     const allUsers = (typeof req.body !== "undefined" && typeof req.body.updateallusers !== "undefined") ? req.body.updateallusers : true;
@@ -126,8 +211,9 @@ const createEmptyMonthSummaries = function (req, res, next) {
             if (allUsers && typeof req.body !== "undefined" && typeof req.body.updateallusers !== "undefined") res.json({ success: true, msg: "SUMMARIES CREATED" });
             if (typeof req.body !== "undefined" && typeof req.body.updateallusers === "undefined") {
                 console.log("Tuta2");
-                res.end();}
-            
+                res.end();
+            }
+
         });
 
     });
@@ -171,7 +257,7 @@ const setSummary = function (req, res) {
 const getUserSheet = function (req, res) {
     const userid = req.body.id;
     const month = req.body.month;
-    const year=req.body.year;
+    const year = req.body.year;
     connection.query(`SELECT dr.id,dr.user, dr.month,dr.day,dr.start,dr.finish,ds.state,dr.ispublicholiday,dr.locked FROM dayrecords dr INNER JOIN daystates ds ON dr.state=ds.id WHERE dr.user='${userid}' AND dr.month='${month}' AND dr.year='${year}' ORDER BY dr.day`, function (err, rows) {
         if (err) res.json(err);
         res.json(rows);
