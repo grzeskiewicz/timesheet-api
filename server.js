@@ -6,12 +6,12 @@ const bodyParser = require('body-parser');
 const db = require('./db/database');
 const user = require('./db/user');
 const schedule = require('node-schedule');
+const uploadImg = require('./upload-img');
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
 app.use(bodyParser.json()); // support json encoded bodies 
 app.options('*', cors()) // include before other routes
-
-
+app.use(express.static('public/uploads'));
 const scheduleMonthlySheets = schedule.scheduleJob('01 00 1 * *', db.createEmptyTimesheets); //schedule every month (00:01 every 1st day of the month)
 const scheduleMonthlySummaries = schedule.scheduleJob('01 00 1 * *', db.createEmptyMonthSummaries); //schedule every month (00:01 every 1st day of the month)
 
@@ -46,6 +46,22 @@ app.post('/getusersheet', db.getUserSheet);
 app.post('/getsummary', db.getSummary);
 
 app.get('/sendemails', db.sendEmails);
+
+
+app.post('/upload-img', uploadImg.upload, (req, res, next) => {
+    if (!req.file) {
+        const error = new Error('Please upload a file')
+        error.httpStatusCode = 400
+        return next(error)
+    } else {
+       // console.log(res.req.file.filename);
+        req.body.filename=res.req.file.filename;
+        next();
+        // res.json ({success:true, msg: "FILE UPLOADED"});
+    }
+})
+
+app.post('/upload-img', user.updateUserSignature);
 
 
 

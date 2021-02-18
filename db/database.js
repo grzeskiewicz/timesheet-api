@@ -228,7 +228,7 @@ const setHours = function (req, res) {
     const state = sickOrHoliday ? req.body.status : (new Date(req.body.start).getHours() >= 20 ? 3 : 2) //NIGHTSHIFT:DAYSHIFT
 
     if (sickOrHoliday) {
-        connection.query(`UPDATE dayrecords SET state ='${state}' WHERE id=${id}`, function (err, rows) {
+        connection.query(`UPDATE dayrecords SET state ='${state}', start=NULL,finish=NULL WHERE id=${id}`, function (err, rows) {
             if (err) { console.log(err); res.json(err); }
             res.json({ success: true, msg: 'Day updated!' });
         });

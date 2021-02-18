@@ -104,6 +104,20 @@ const editUser = function (req, res) {
     });
 }
 
+const updateUserSignature = function (req, res) {
+    const userID = req.body.user;
+    const filename = req.body.filename;
+    console.log(userID, filename);
+    connection.query(`UPDATE IGNORE users SET signature='${filename}' WHERE id='${userID}'`, function (err, rows) {
+        if (err) res.json(err);
+        if (rows.changedRows === 0) {
+            res.json({ success: false, msg: 'NO CHANGES' });
+        } else {
+            res.json({ success: true, msg: 'SIGNATURE UPDATED' });
+        }
+    });
+}
+
 const deleteUser = function (req, res) {
     connection.query("delete from users where id=" + req.body.user, function (err, rows) {
         if (err) res.json({ err: err });
@@ -113,7 +127,7 @@ const deleteUser = function (req, res) {
 
 
 const users = function (req, res) {
-    connection.query("SELECT id,email,name,surname,role,deal FROM users", function (err, rows) {
+    connection.query("SELECT id,email,name,surname,role,deal,signature FROM users", function (err, rows) {
         if (err) res.json(err);
         res.json(rows);
     });
@@ -123,42 +137,61 @@ const users = function (req, res) {
 
 
 const login = function (req, res) {
+    console.log(req.body);
     connection.query("select * from users where email='" + req.body.email + "'", function (err, rows) {
-        if (err) res.json({err:err});
+        console.log("Here");
+        if (err) {
+            res.json({ err: err });
+            return;
+        }
         user = rows[0];
+        console.log(rows);
         if (user) {
             if (!comparePassword(req.body.password, user.password)) {
                 res.json({ success: false, msg: "WRONG PASSWORD" });
+                return;
             } else {
-                return res.json({ success: true, msg: "LOGIN SUCCESS", token: 'JWT ' + jwt.sign({ email: user.email, name: user.name, surname: user.surname, id: user.id }, 'RESTFULAPIs') });
+                res.json({ success: true, msg: "LOGIN SUCCESS", token: 'JWT ' + jwt.sign({ email: user.email, name: user.name, surname: user.surname, id: user.id }, 'RESTFULAPIs') }); //return json?
+                return;
             }
         } else {
             res.json({ success: false, msg: "USER NOT FOUND" });
+            return;
         }
 
     });
 };
 
 
-const userinfo = function (req, res, next) {
+const userinfo = function (req, res) { //next
+    console.log(req.headers.authorization);
     if (req.headers && req.headers.authorization && req.headers.authorization.split(' ')[0] === 'JWT') {
         jwt.verify(req.headers.authorization.split(' ')[1], 'RESTFULAPIs', function (err, decode) {
-            if (err) req.user = undefined; // ?
-
+            if (err) res.json({ success: false, msg: "USER NOT FOUND" });   // req.user = undefined; //?
             connection.query("select id,email,role from users where email='" + decode.email + "'", function (err, rows) {
+                if (err) {
+                    res.json({ success: false, error: err });
+                    return;
+                }
+                if (!rows || rows === undefined) {
+                    res.json({ success: false, msg: "USER NOT FOUND" }); // rows[0] might not exist if rows undefined
+                    return;
+                }
+
                 const user = rows[0];
                 if (user) {
                     res.json({ success: true, email: decode.email, role: user.role, id: user.id });
+                    return;
                 } else {
                     res.json({ success: false, msg: "USER NOT FOUND" });
                 }
             });
-            req.user = decode; //?
+            //   req.user = decode; //?
             // next();
         });
     } else {
         res.json({ success: false, msg: "Token not provided" });
-        req.user = undefined; //?
+        // req.user = undefined; //?
         //next();
     }
 };
@@ -263,4 +296,4 @@ const storePassword = function (req, res) {
 }
 
 
-module.exports = { users, createUser, editUser, deleteUser, login, loginRequired, userinfo, getRoles, getDeals, passwordReset, storePassword }
+module.exports = { users, createUser, editUser, deleteUser, login, loginRequired, userinfo, getRoles, getDeals, passwordReset, storePassword, updateUserSignature }
