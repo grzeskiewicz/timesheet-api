@@ -184,13 +184,11 @@ const createEmptyTimesheets = function (req, res, next) {
 
 
 const createEmptyMonthSummaries = function (req, res, next) {
-    console.log("summaries1");
     const year = new Date().getFullYear();
     const month = new Date().getMonth() + 1;
     const allUsers = (typeof req.body !== "undefined" && typeof req.body.updateallusers !== "undefined") ? req.body.updateallusers : true;
     connection.query("SELECT id FROM users", function (err, rows) { // WHERE deal=1
         if (err) res.json(err);
-        console.log("summaries2");
         const ids = Object.keys(rows).map((key) => rows[key].id);
         const summaries = [];
         for (const id of ids) {
@@ -206,11 +204,9 @@ const createEmptyMonthSummaries = function (req, res, next) {
 
         connection.query("INSERT IGNORE INTO monthsummaries (user,month,year) VALUES" + mapka, function (err, rows) {
             if (err) res.json(err);
-            console.log(req.body);
 
             if (allUsers && typeof req.body !== "undefined" && typeof req.body.updateallusers !== "undefined") res.json({ success: true, msg: "SUMMARIES CREATED" });
             if (typeof req.body !== "undefined" && typeof req.body.updateallusers === "undefined") {
-                console.log("Tuta2");
                 res.end();
             }
 
@@ -285,7 +281,8 @@ const sendEmails = function (req, res) {
 
         const mailOptions = {
             from: 'timesheet.klaster@gmail.com',
-            to: emails,
+            to: 'timesheet.klaster@gmail.com',
+            bcc: emails,
             subject: '[Lista obecności] Przypomnienie',
             text:
                 `

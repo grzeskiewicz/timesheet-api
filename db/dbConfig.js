@@ -1,6 +1,6 @@
 
 
-module.exports = {
+/*module.exports = {
     config: {
         host: 'timesheetdb.c3d81nauj02k.eu-central-1.rds.amazonaws.com',
         user: 'admin',
@@ -8,9 +8,9 @@ module.exports = {
         database: 'timesheet',
         port: 3306
     }
-} 
+} */
 
-/*
+
 module.exports = {
     config: {
         host: 'localhost',
@@ -20,5 +20,4 @@ module.exports = {
         port: 3306
     }
 }
-*/
 
