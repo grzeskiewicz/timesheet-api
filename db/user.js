@@ -8,7 +8,7 @@ const app = express();
 const cors = require('cors');
 const date = require('../date');
 const dbConfig = require('./dbConfig');
-const mailConfig = require('../mailConfig');
+//const mailConfig = require('../mailConfig');
 const nodemailer = require('nodemailer');
 
 
@@ -228,7 +228,7 @@ const passwordReset = function (req, res) {
                     connection.query(`INSERT INTO authresets(user,token,expire) VALUES(${user.id},"${hash}",'${expire}')`, function (err, authresetinsert) {
                         if (err) res.json({ err: err });
 
-                        const transporter = nodemailer.createTransport(mailConfig.config);
+                        const transporter = nodemailer.createTransport(process.env.CONFIG);
                         const mailOptions = {
                             from: 'timesheet.klaster@gmail.com',
                             to: email,

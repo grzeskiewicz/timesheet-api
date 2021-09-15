@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express'),
     app = express();
 const cors = require('cors');
@@ -76,6 +77,6 @@ const port = process.env.PORT || 3001,
     ip = process.env.IP || '127.0.0.1';
 
 http.listen(port);
-console.log('Server running on http://%s', port);
+console.log('Server running on http://%s:%s', ip,port);
 
 module.exports = app;

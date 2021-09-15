@@ -1,4 +1,4 @@
-const mysql = require('mysql')
+const mysql = require('mysql');
 const date = require('../date');
 const dbConfig = require('./dbConfig');
 const mailConfig = require('../mailConfig');
@@ -270,7 +270,6 @@ const getSummary = function (req, res) {
         res.json(rows[0]);
     });
 }
-
 const transporter = nodemailer.createTransport(mailConfig.config);
 
 const sendEmails = function (req, res) {
