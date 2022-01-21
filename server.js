@@ -48,7 +48,7 @@ app.post('/getsummary', db.getSummary);
 
 app.get('/sendemails', db.sendEmails);
 
-
+/*
 app.post('/upload-img', uploadImg.upload, (req, res, next) => {
     if (!req.file) {
         const error = new Error('Please upload a file')
@@ -60,7 +60,7 @@ app.post('/upload-img', uploadImg.upload, (req, res, next) => {
         next();
         // res.json ({success:true, msg: "FILE UPLOADED"});
     }
-})
+})*/
 
 app.post('/upload-img', user.updateUserSignature);
 
