@@ -1,9 +1,7 @@
 const mysql = require('mysql');
-const date = require('../date');
+const moment=require('moment');
 const dbConfig = require('./dbConfig');
-const mailConfig = require('../mailConfig');
-const nodemailer = require('nodemailer');
-
+const { body, validationResult } = require('express-validator');
 
 let connection;
 
@@ -32,278 +30,142 @@ function handleDisconnect() {
 handleDisconnect();
 
 
-const HOLIDAYS = [
-    { day: 1, month: 1 },
-    { day: 6, month: 1 },
-    { day: 1, month: 5 },
-    { day: 3, month: 5 },
-    { day: 15, month: 8 },
-    { day: 1, month: 11 },
-    { day: 11, month: 11 },
-    { day: 25, month: 12 },
-    { day: 26, month: 12 }
-]
-
-const CHANGING_HOLIDAYS = {
-    [2021]: [
-        { day: 4, month: 4 },
-        { day: 4, month: 4 },
-        { day: 23, month: 5 },
-        { day: 3, month: 6 }
-    ]
-    ,
-    [2022]: [
-        { day: 17, month: 4 },
-        { day: 18, month: 4 },
-        { day: 5, month: 6 },
-        { day: 16, month: 6 }
-    ],
-    [2023]: [
-        { day: 9, month: 4 },
-        { day: 10, month: 4 },
-        { day: 28, month: 5 },
-        { day: 8, month: 6 }
-    ],
-    [2024]: [
-        { day: 31, month: 3 },
-        { day: 1, month: 4 },
-        { day: 19, month: 5 },
-        { day: 30, month: 5 }
-    ],
-    [2025]: [
-        { day: 20, month: 4 },
-        { day: 21, month: 4 },
-        { day: 8, month: 6 },
-        { day: 19, month: 6 }
-    ],
-    [2026]: [
-        { day: 5, month: 4 },
-        { day: 6, month: 4 },
-        { day: 24, month: 5 },
-        { day: 4, month: 6 }
-    ],
-    [2027]: [
-        { day: 28, month: 3 },
-        { day: 29, month: 3 },
-        { day: 16, month: 5 },
-        { day: 27, month: 5 }
-    ],
-    [2028]: [
-        { day: 16, month: 4 },
-        { day: 17, month: 4 },
-        { day: 4, month: 6 },
-        { day: 15, month: 6 }
-    ],
-    [2029]: [
-        { day: 1, month: 4 },
-        { day: 2, month: 4 },
-        { day: 20, month: 5 },
-        { day: 31, month: 5 }
-    ],
-    [2030]: [
-        { day: 21, month: 4 },
-        { day: 22, month: 4 },
-        { day: 9, month: 6 },
-        { day: 20, month: 6 }
-    ],
-    [2031]: [
-        { day: 1, month: 4 },
-        { day: 2, month: 4 },
-        { day: 1, month: 6 },
-        { day: 12, month: 6 }
-    ],
-    [2032]: [
-        { day: 28, month: 3 },
-        { day: 29, month: 3 },
-        { day: 16, month: 5 },
-        { day: 27, month: 5 }
-    ],
-    [2033]: [
-        { day: 17, month: 4 },
-        { day: 18, month: 4 },
-        { day: 5, month: 6 },
-        { day: 16, month: 6 }
-    ]
-}
-//ruchome: wielkanoc I, wielkanoc II, zielony świątek, boże ciało
 
 
 
+//TODO: get microgreens, get crops, get shelves - done
+//TODO2: add microgreens, add racks!, add crops
+//TODO3: edit microgreens, delete racks, delete shelves,edit crops
 
-
-
-
-const createEmptyTimesheets = function (req, res, next) {
-
-    const month = typeof req.body !== "undefined" ? (typeof req.body.month !== "undefined" ? req.body.month : new Date().getMonth() + 1) : new Date().getMonth() + 1;
-    const year = typeof req.body !== "undefined" ? (typeof req.body.year !== "undefined" ? req.body.year : new Date().getFullYear()) : new Date().getFullYear;
-
-
-    const days = date.daysInMonth(month, 2020);
-    const holidaysMonth = HOLIDAYS.filter(element => element.month === Number(month));
-    const changingHolidaysMonth = CHANGING_HOLIDAYS[year].filter(element => element.month === Number(month));
-    connection.query("SELECT id FROM users", function (err, rows) { // WHERE deal=1
+const getCrops = function (req, res) {
+    connection.query(`SELECT * FROM crops`, function (err, rows) {
         if (err) res.json(err);
-
-        const ids = Object.keys(rows).map((key) => rows[key].id);
-        const userday = [];
-        for (const id of ids) {
-            for (let day = 1; day <= days; day++) {
-                let isPublicHoliday = false;
-                for (const holiday of holidaysMonth) {
-                    if (holiday.day === day) isPublicHoliday = true;
-                }
-                for (const holiday of changingHolidaysMonth) {
-                    if (holiday.day === day) isPublicHoliday = true;
-                }
-
-                const record = id + "," + year + "," + month + "," + day + "," + isPublicHoliday;
-                userday.push(record);
-            }
-        }
-
-        const mapka = userday.map((record) => {
-            return `(${record})`;
-        });
-
-        connection.query("INSERT IGNORE INTO dayrecords (user,year,month,day,ispublicholiday) VALUES" + mapka, function (err, rows) {
-            if (err) {
-                // console.log(err);
-                res.json(err);
-            }
-
-            if (typeof req.body !== "undefined" && typeof req.body.month !== "undefined") res.json({ success: true, msg: "SHEETS CREATED" });
-            console.log("createsheeets 3 insert");
-            if (typeof req.body !== "undefined" && typeof req.body.month === "undefined") {
-                console.log("Przekazuje dalej");
-                next();
-            }
-        });
-
+        res.json(rows);
     });
 }
 
-
-const createEmptyMonthSummaries = function (req, res, next) {
-    const year = new Date().getFullYear();
-    const month = new Date().getMonth() + 1;
-    const allUsers = (typeof req.body !== "undefined" && typeof req.body.updateallusers !== "undefined") ? req.body.updateallusers : true;
-    connection.query("SELECT id FROM users", function (err, rows) { // WHERE deal=1
+const getMicrogreens = function (req, res) {
+    connection.query(`SELECT * FROM microgreens`, function (err, rows) {
         if (err) res.json(err);
-        const ids = Object.keys(rows).map((key) => rows[key].id);
-        const summaries = [];
-        for (const id of ids) {
-            const record = id + "," + month + "," + year;
-            summaries.push(record);
-        }
-
-        const mapka = summaries.map((record) => {
-            return `(${record})`;
-        });
-
-
-
-        connection.query("INSERT IGNORE INTO monthsummaries (user,month,year) VALUES" + mapka, function (err, rows) {
-            if (err) res.json(err);
-
-            if (allUsers && typeof req.body !== "undefined" && typeof req.body.updateallusers !== "undefined") res.json({ success: true, msg: "SUMMARIES CREATED" });
-            if (typeof req.body !== "undefined" && typeof req.body.updateallusers === "undefined") {
-                res.end();
-            }
-
-        });
-
+        res.json(rows);
     });
 }
 
-
-const setHours = function (req, res) {
-    const id = req.body.id;
-    const start = req.body.start == null ? null : `'${req.body.start}'`;
-    const finish = req.body.finish == null ? null : `'${req.body.finish}'`;
-    const sickOrHoliday = Number(req.body.status) === 4 || Number(req.body.status) === 5;
-    const state = sickOrHoliday ? req.body.status : (new Date(req.body.start).getHours() >= 20 ? 3 : 2) //NIGHTSHIFT:DAYSHIFT
-
-    if (sickOrHoliday) {
-        connection.query(`UPDATE dayrecords SET state ='${state}', start=NULL,finish=NULL WHERE id=${id}`, function (err, rows) {
-            if (err) { console.log(err); res.json(err); }
-            res.json({ success: true, msg: 'Day updated!' });
-        });
-    } else {
-        connection.query(`UPDATE dayrecords SET start=${start}, finish=${finish}, state ='${state}' WHERE id=${id}`, function (err, rows) {
-            if (err) { console.log(err); res.json(err); }
-            res.json({ success: true, msg: 'Day updated!' });
-        });
-    }
-
-}
-
-
-const setSummary = function (req, res) {
-    const id = req.body.id;
-    const bonus = req.body.bonus !== '' ? String(req.body.bonus) : 0;
-    const overtime = req.body.overtime !== '' ? String(req.body.overtime) : 0;
-
-    connection.query(`UPDATE monthsummaries SET bonus ='${bonus}', overtime='${overtime}' WHERE id=${id}`, function (err, rows) {
-        if (err) res.json(err);
-        res.json({ success: true, msg: 'SUMMARY UPDATED' });
-    });
-}
-
-
-const getUserSheet = function (req, res) {
-    const userid = req.body.id;
-    const month = req.body.month;
-    const year = req.body.year;
-    connection.query(`SELECT dr.id,dr.user, dr.month,dr.day,dr.start,dr.finish,ds.state,dr.ispublicholiday,dr.locked FROM dayrecords dr INNER JOIN daystates ds ON dr.state=ds.id WHERE dr.user='${userid}' AND dr.month='${month}' AND dr.year='${year}' ORDER BY dr.day`, function (err, rows) {
+const getShelves = function (req, res) {
+    connection.query(`SELECT * FROM shelves`, function (err, rows) {
         if (err) res.json(err);
         res.json(rows);
     });
 }
 
 
-const getSummary = function (req, res) {
-    const user = req.body.user;
-    const month = new Date().getMonth() + 1;
-    const year = new Date().getFullYear();
-    connection.query(`SELECT * FROM monthsummaries WHERE user='${user}' AND month='${month}'  AND year='${year}'`, function (err, rows) {
+const addMicrogreens = function (req, res, next) { //TODO:walidacja pól
+    const dataArr=[];
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+      return;
+    }
+    console.log(req.body)
+    for (const key of Object.keys(req.body)) dataArr.push(`'${req.body[key]}'`);
+   const [nameEN,namePL,gramsTray,topWater,bottomWater,weight,blackout,light,color] = dataArr;
+    const vals=`(${nameEN},${namePL},${gramsTray},${topWater},${bottomWater},${weight},${blackout},${light},${color})`
+        connection.query("INSERT INTO microgreens (name_en,name_pl,grams_tray,top_water,bottom_water,weight,blackout,light,color) VALUES" + vals, function (err, rows) {
+            if (err) {res.json({success:false,err:err}); return;}
+            res.json({ success: true, msg: 'MICROGREENS_ADDED' });
+        });   
+}
+
+const addCrops = function (req, res, next) { // TODO2: pobieranie rekordow o tym samym shelfid z węższego zakresu (+15.-15?)
+   const errors = validationResult(req);
+   let lightStartDate;
+   const dataArr=[];
+   let microgreensData;
+
+   if (!errors.isEmpty()) {res.status(400).json({ errors: errors.array()}); return;}
+   
+    for (const key of Object.keys(req.body)) dataArr.push(`'${req.body[key]}'`);
+    const [harvest,microgreenID,shelfID,trays,notes]=dataArr;
+    console.log(moment().format('YYYY-MM-DD hh:mm:ss'))
+    const vals=`(${harvest},${microgreenID},${shelfID},${trays},${notes})`;
+let harvestDate=moment(req.body.harvest);
+    connection.query(`SELECT * FROM microgreens`, function (err, rows) {
         if (err) res.json(err);
-        res.json(rows[0]);
+        microgreensData=rows;
+        microgreen=microgreensData.find(x=> x.id==req.body.microgreenID);
+        lightStartDate=moment(req.body.harvest).subtract(microgreen.light, "days");
+        connection.query(`SELECT * FROM crops WHERE shelf_id=${shelfID}`, function (err, rowsx) {
+    const sameShelfCrops=rowsx;
+    let isTaken=false;
+    for (const crop of sameShelfCrops){
+       //crop.harvest and cropLightStart vs lightStartDate and req.body.harvest
+       const cropMicrogreen=microgreensData.find(x=> x.id==crop.microgreen_id);
+       const cropHarvest=moment(crop.harvest);
+       const cropLightStart=moment(crop.harvest).subtract(cropMicrogreen.light, "days");
+
+       console.log(lightStartDate.format('YYYY-MM-DD'),cropHarvest.format('YYYY-MM-DD'),harvestDate.format('YYYY-MM-DD'),cropLightStart.format('YYYY-MM-DD'))
+if((lightStartDate.isSameOrAfter(cropHarvest) || harvestDate.isSameOrBefore(cropLightStart))===false) {
+    res.json({ success: false, msg: 'CROP_DATE_TAKEN' });
+    isTaken=true;
+    break; 
+       }
+    }
+    if (!isTaken) {
+        connection.query("INSERT INTO crops (harvest,microgreen_id,shelf_id,trays,notes) VALUES" + vals, function (err, rows) {
+        if (err) {
+            res.json(err);
+        return;
+        }
+        res.json({ success: true, msg: 'CROP_ADDED' });
+    });    
+}
+
+       });
+
     });
 }
-const transporter = nodemailer.createTransport(mailConfig.config);
 
-const sendEmails = function (req, res) {
 
-    connection.query("SELECT email FROM users", function (err, rows) { // "WHERE deal=1""
-        if (err) res.json(err);
-        const emails = Object.keys(rows).map((key) => rows[key].email).join(",");
-
-        const mailOptions = {
-            from: 'timesheet.klaster@gmail.com',
-            to: 'timesheet.klaster@gmail.com',
-            bcc: emails,
-            subject: '[Lista obecności] Przypomnienie',
-            text:
-                `
-        Witam, 
-        przypominam o wypełnieniu listy obecności za obecny miesiąc!
-            
-        Pozdrawiam,
-        Administrator.
-            `
-        };
-
-        transporter.sendMail(mailOptions, function (error, info) {
-            if (error) {
-                console.log(error);
-            } else {
-                res.json({ success: true, msg: 'EMAILS SENT' });
-                console.log('Email sent: ' + info.response);
+const addRacks = function (req, res, next) {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+              return res.status(400).json({ errors: errors.array() });
             }
-        });
-    });
-
+    const name=req.body.name;
+    const shelves=req.body.shelves;
+    let vals='';
+    for (let i=0;i<shelves;i++){
+if (i==0 ) {vals=`('${name}',${i})`} else {vals=vals.concat(',',`('${name}',${i})`);}
+    }
+    connection.query("INSERT INTO shelves (rack_name,level) VALUES "+vals , function (err, rows) {
+        if (err) {
+            res.json({success:false, err:err});
+        } else {
+            res.json({ success: true, msg: 'RACK_ADDED' });
+        }
+    
+    });  
 }
 
-module.exports = { createEmptyTimesheets, createEmptyMonthSummaries, setHours, getUserSheet, getSummary, setSummary, sendEmails };
+
+const editMicrogreens= function (req, res) {
+    const microgreens = req.body;
+    connection.query(`UPDATE microgreens SET name_en='${microgreens.nameEN}',name_pl='${microgreens.namePL}',grams_tray='${microgreens.gramsTray}'
+    , sprinkle_water='${microgreens.sprinkleWater}',bottom_water='${microgreens.bottomWater}',weight='${microgreens.weight}',blackout='${microgreens.blackout}'
+    ,light='${microgreens.light}' WHERE id='${microgreens.id}'`, function (err, result) {
+        if (err) {res.json({ success: false, msg: err }); return;}
+        res.json({ succes: true, msg: "MICROGREENS_EDITED" });
+    });
+}
+
+const editCrop= function (req, res) {
+    const crop = req.body;
+    connection.query(`UPDATE crops SET harvest='${crop.harvest}',microgreen_id='${crop.microgreenID}',shelf_id='${crop.shelfID}'
+    , trays='${crop.tray}',notes='${crop.notes}' WHERE id='${crop.id}'`, function (err, result) {
+        if (err) {res.json({ success: false, msg: err }); return;}
+        res.json({ succes: true, msg: "CROP_EDITED" });
+    });
+}
+
+
+module.exports = {getCrops, getMicrogreens,getShelves, addMicrogreens, addRacks, addCrops,editCrop,editMicrogreens };
